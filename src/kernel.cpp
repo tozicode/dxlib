@@ -59,6 +59,8 @@ void kernel_t::run()
 
         update();
     }
+
+    DxLib_End();
 }
 
 
