@@ -24,9 +24,6 @@ using tstring = std::string;
 
 using filepath_t = tstring;
 
-constexpr int WINDOW_WIDTH = 800;
-constexpr int WINDOW_HEIGHT = 600;
-constexpr int FPS_BASE = 30;
 
 /** “ñŸŒ³î•ñ‚ğˆµ‚¤‚½‚ß‚Ì\‘¢‘Ì. */
 template <typename T>
