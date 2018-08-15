@@ -15,6 +15,7 @@ class gui_t;
 using gui_ptr_t = std::shared_ptr<gui_t>;
 
 
+/** 画面を構成する各種オブジェクトの基底クラス. */
 class gui_t
 {
 public:

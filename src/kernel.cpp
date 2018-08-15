@@ -1,6 +1,8 @@
 #include "kernel.h"
 #include "key_input.h"
 #include "mouse_input.h"
+#include "scene.h"
+
 
 namespace dxlib
 {
@@ -43,8 +45,26 @@ kernel_t::kernel_t(const initializer_t &init)
 }
 
 
+void kernel_t::run()
+{
+    while (not do_quit())
+    {
+        scene.update();
+
+        if (scene.current)
+        {
+            scene.current->update_recursively();
+            scene.current->draw_recursively();
+        }
+
+        update();
+    }
+}
+
+
 void kernel_t::update()
 {
+    scene.update();
     ScreenFlip();
 
     ++m_age;
@@ -82,6 +102,19 @@ int kernel_t::fps() const
     }
     else
         return 0;
+}
+
+
+void kernel_t::scene_manager_t::reserve(std::unique_ptr<scene_t> s)
+{
+    next.reset(s.release());
+}
+
+
+void kernel_t::scene_manager_t::update()
+{
+    if (next)
+        current.reset(next.release());
 }
 
 

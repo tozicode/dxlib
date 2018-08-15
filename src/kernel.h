@@ -12,6 +12,8 @@ namespace dxlib
 {
 
 
+class scene_t;
+
 struct initializer_t
 {
     initializer_t();
@@ -32,6 +34,7 @@ public:
     static void initialize(const initializer_t&);
     static kernel_t& instance() { return (*ms_inst); }
 
+    void run();
     void update();
 
     inline void quit() { m_do_quit = true; }
@@ -41,6 +44,15 @@ public:
     inline int fps_base() const { return m_fps; }
     inline int millisec_per_frame() const { return 1000 / m_fps; }
     inline age_t age() const { return m_age; }
+
+    struct scene_manager_t
+    {
+        void reserve(std::unique_ptr<scene_t>);
+        void update();
+
+        std::unique_ptr<scene_t> current;
+        std::unique_ptr<scene_t> next;
+    } scene;
 
 private:
     kernel_t(const initializer_t&);
