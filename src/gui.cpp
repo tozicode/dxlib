@@ -5,8 +5,8 @@
 namespace dxlib
 {
 
-gui_t::gui_t(position_t p, width_t w)
-    : m_position(p), m_width(w), m_age(0),
+gui_t::gui_t(position_t p, width_t w, priority_t priority)
+    : m_position(p), m_width(w), m_age(0), m_priority(priority),
     m_is_pointed(false),
     m_is_dragged_left(false),
     m_is_dragged_right(false),
@@ -109,6 +109,15 @@ void gui_t::draw_recursively() const
 
 void gui_t::add_child(gui_ptr_t p)
 {
+    for (auto it = m_children.begin(); it != m_children.end(); ++it)
+    {
+        if ((*it)->priority() > p->priority())
+        {
+            m_children.insert(it, std::move(p));
+            return;
+        }
+    }
+
     m_children.push_back(std::move(p));
 }
 

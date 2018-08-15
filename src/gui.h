@@ -13,13 +13,13 @@ namespace dxlib
 class gui_t;
 
 using gui_ptr_t = std::shared_ptr<gui_t>;
-
+using priority_t = int;
 
 /** 画面を構成する各種オブジェクトの基底クラス. */
 class gui_t
 {
 public:
-    gui_t(position_t p, width_t w);
+    gui_t(position_t p, width_t w, priority_t = 100);
 
     virtual void update();
     virtual void draw() const {}
@@ -45,8 +45,19 @@ public:
     void update_recursively();
     void draw_recursively() const;
 
+    inline const position_t& position() const { return m_position; }
+    inline const width_t& width() const { return m_width; }
+    inline age_t age() const { return m_age; }
+    inline priority_t priority() const { return m_priority; }
+
+    /**
+     * gui_t オブジェクトを子として追加する。
+     * オブジェクトは priority() が低い順に並ぶように追加される。
+     * 同じ値の場合は後に追加された方が後ろに来る。
+     */
     void add_child(gui_ptr_t);
 
+    /** マウスポインタが上にあれば true を返す。 */
     bool is_pointed() const;
 
 protected:
@@ -55,6 +66,7 @@ protected:
     position_t m_position;
     width_t m_width;
     age_t m_age;
+    priority_t m_priority;
 
     bool m_is_pointed;
     bool m_is_dragged_left;

@@ -5,7 +5,7 @@
 #include <cmath>
 #include <initializer_list>
 
-#include "DxLib.h"
+#include <DxLib.h>
 
 
 namespace dxlib
