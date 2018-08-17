@@ -71,7 +71,7 @@ inline width_t image_t::width() const
 
 inline void image_t::draw_rotated(
     position_t p, double scale, double radius,
-    bool reverse_x = false, bool reverse_y = false) const
+    bool reverse_x, bool reverse_y) const
 {
     DrawRotaGraph(
         p.x, p.y, scale, radius, m_handle, TRUE,
@@ -80,7 +80,7 @@ inline void image_t::draw_rotated(
 
 inline void image_t::draw_rotated_3(
     position_t p, xy_t<int> c, xy_t<double> scale, double radius,
-    bool reverse_x = false, bool reverse_y = false) const
+    bool reverse_x, bool reverse_y) const
 {
     auto w = width();
     DrawRotaGraph3(
@@ -95,11 +95,5 @@ inline image_handle_t image_t::release()
     m_handle = -1;
     return h;
 }
-
-inline image_handle_t image_t::handle() const
-{
-    return m_handle;
-}
-
 
 }

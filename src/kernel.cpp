@@ -69,7 +69,7 @@ void kernel_t::update()
     ++m_age;
     m_counts.push_front(GetNowCount());
 
-    if (m_counts.size() > fps_base())
+    if (m_counts.size() > (size_t)fps_base())
         m_counts.pop_back();
 
     if (m_counts.size() > 1)

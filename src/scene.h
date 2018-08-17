@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util.h"
 #include "gui.h"
 
 namespace dxlib
@@ -12,6 +13,8 @@ namespace dxlib
 class scene_t : public gui_t
 {
 public:
+    scene_t() : gui_t({0, 0}, get_window_size()) {}
+
     /** 毎フレーム呼び出される処理。 */
     inline void routine();
 

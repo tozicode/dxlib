@@ -72,7 +72,7 @@ public:
     /** 変数 x の内容をバイナリファイルに書き込む。 */
     template <class T> size_t write(const T &x)
     {
-        std::ofstream::write(&x, sizeof(T));
+        std::ofstream::write((char*)&x, sizeof(T));
         return sizeof(T);
     }
 
