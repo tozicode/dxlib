@@ -178,6 +178,32 @@ inline tstring format(const tchar* fmt, ...)
 }
 
 
+inline std::string string(const tstring &str)
+{
+#ifdef UNICODE
+    size_t size;
+    char buf[4096];
+    wcstombs_s(&size, buf, 4096, str.c_str(), _TRUNCATE);
+    return std::string(buf);
+#else
+    return str;
+#endif
+}
+
+
+inline std::wstring wstring(const tstring &str)
+{
+#ifdef UNICODE
+    return str;
+#else
+    size_t size;
+    wchar_t buf[4096];
+    mbstowcs_s(&size, buf, str.c_str(), 4095);
+    return std::wstring(buf);
+#endif
+}
+
+
 /** 現在のウィンドウサイズを取得する。 */
 inline width_t get_window_size()
 {
