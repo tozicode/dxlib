@@ -42,7 +42,10 @@ public:
     virtual void on_drag_middle_start() {}
     virtual void on_drag_middle_end() {}
 
+    /** 自分自身および全ての子オブジェクトを更新する。 */
     void update_recursively();
+
+    /** 自分自身および全ての子オブジェクトを描画する。 */
     void draw_recursively() const;
 
     inline const position_t& position() const { return m_position; }

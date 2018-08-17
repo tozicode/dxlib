@@ -52,10 +52,7 @@ void kernel_t::run()
         scene.update();
 
         if (scene.current)
-        {
-            scene.current->update_recursively();
-            scene.current->draw_recursively();
-        }
+            scene.current->routine();
 
         update();
     }

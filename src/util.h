@@ -3,6 +3,8 @@
 #include <string>
 #include <cassert>
 #include <cmath>
+#include <cstdarg>
+#include <algorithm>
 #include <initializer_list>
 
 #include <DxLib.h>
@@ -13,13 +15,18 @@ namespace dxlib
 
 using age_t = size_t;
 using time_t = int;
+using index_t = int;
 
 using tchar = TCHAR;
 
 #ifdef UNICODE
 using tstring = std::wstring;
+typedef std::wifstream tifstream;
+typedef std::wofstream tofstream;
 #else
 using tstring = std::string;
+typedef std::ifstream tifstream;
+typedef std::ofstream tofstream;
 #endif
 
 using filepath_t = tstring;
@@ -58,6 +65,40 @@ struct xy_t
 
 using position_t = xy_t<int>;
 using width_t = xy_t<int>;
+
+
+/** 値域を持つ変数を表すためのクラス。 */
+template <typename T>
+class ranged_value_t
+{
+public:
+    ranged_value_t(T min, T max, T init)
+        : m_min(min), m_max(max), m_val(init) {}
+    ranged_value_t(const ranged_value_t<T> &x)
+        : m_min(x.min()), m_max(x.max()), m_val(x.get()) {}
+
+    inline operator T() const { return get(); }
+
+    inline ranged_value_t& operator = (T x) { set(x); return (*this); }
+    inline ranged_value_t& operator += (T x) { add(+x); return (*this); }
+    inline ranged_value_t& operator -= (T x) { add(-x); return (*this); }
+
+    inline bool operator == (const ranged_value_t<T> &x) const { return get() == x.get(); }
+
+    inline void set(T v) { m_val = v; normalize(); }
+    inline void add(T d) { m_val += d; normalize(); }
+
+    inline T min() const { return m_min; }
+    inline T max() const { return m_max; }
+    inline T get() const { return m_val; }
+
+private:
+    inline void normalize() { m_val = std::max<T>(std::min<T>(m_val, m_max), m_min); }
+
+    const T m_min;
+    const T m_max;
+    T m_val;
+};
 
 
 /** 透明度付きの色情報を扱うための構造体. */
@@ -106,6 +147,35 @@ private:
     double m_radius;
     double m_sin, m_cos;
 };
+
+
+inline int stoi(const tstring& str)
+{
+    int i(-1);
+    _stscanf_s(str.c_str(), _T("%d"), &i);
+    return i;
+}
+
+
+inline double stod(const tstring& str)
+{
+    double d;
+    _stscanf_s(str.c_str(), _T("%lf"), &d);
+    return d;
+}
+
+
+inline tstring format(const tchar* fmt, ...)
+{
+    static tchar buf[4096];
+
+    va_list list;
+    va_start(list, fmt);
+    _vstprintf_s(buf, fmt, list);
+    va_end(list);
+
+    return tstring(buf);
+}
 
 
 /** 現在のウィンドウサイズを取得する。 */

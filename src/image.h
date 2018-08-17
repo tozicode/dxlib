@@ -18,10 +18,15 @@ public:
     inline image_t(const tstring &path);
     inline ~image_t();
 
-    operator image_handle_t() const;
+    inline operator image_handle_t() const;
 
-    void draw_rotated(
+    inline width_t width() const;
+
+    inline void draw_rotated(
         position_t p, double scale, double radius,
+        bool reverse_x = false, bool reverse_y = false) const;
+    inline void draw_rotated_3(
+        position_t p, xy_t<int> center, xy_t<double> scale, double radius,
         bool reverse_x = false, bool reverse_y = false) const;
 
     inline image_handle_t release();
@@ -52,17 +57,35 @@ inline image_t::~image_t()
     DeleteGraph(m_handle);
 }
 
-image_t::operator image_handle_t() const
+inline image_t::operator image_handle_t() const
 {
     return handle();
 }
 
-void image_t::draw_rotated(
+inline width_t image_t::width() const
+{
+    width_t w;
+    GetGraphSize(m_handle, &w.x, &w.y);
+    return w;
+}
+
+inline void image_t::draw_rotated(
     position_t p, double scale, double radius,
     bool reverse_x = false, bool reverse_y = false) const
 {
     DrawRotaGraph(
         p.x, p.y, scale, radius, m_handle, TRUE,
+        reverse_x ? TRUE : FALSE, reverse_y ? TRUE : FALSE);
+}
+
+inline void image_t::draw_rotated_3(
+    position_t p, xy_t<int> c, xy_t<double> scale, double radius,
+    bool reverse_x = false, bool reverse_y = false) const
+{
+    auto w = width();
+    DrawRotaGraph3(
+        p.x, p.y, w.x / 2 + c.x, w.y / 2 + c.y,
+        scale.x, scale.y, radius, m_handle, true,
         reverse_x ? TRUE : FALSE, reverse_y ? TRUE : FALSE);
 }
 
