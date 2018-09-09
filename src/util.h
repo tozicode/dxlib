@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include <vector>
+#include <list>
+#include <functional>
 #include <cassert>
 #include <cmath>
 #include <cstdarg>
@@ -29,20 +32,71 @@ typedef std::ifstream tifstream;
 typedef std::ofstream tofstream;
 #endif
 
-using filepath_t = tstring;
+
+/** tstring のラッパークラス。 */
+class string_t : public tstring
+{
+public:
+    string_t() = default;
+    string_t(const string_t&) = default;
+    string_t(const tstring &s) : tstring(s) {}
+    string_t(const tchar *s) : tstring(s) {}
+
+    /**
+     * 区切り文字 sep によって文字列を分割して返す。
+     * @param MAX_NUM 分割数の最大値
+     */
+    std::vector<string_t> split(const tchar *sep, const int MAX_NUM = -1) const;
+
+    /** 文字列内にある全ての from を to に置き換えた結果を返す。 */
+    string_t replace(const tstring &from, const tstring &to) const;
+};
+
+
+/** ファイルパスを扱うためのクラス。 */
+class filepath_t : public string_t
+{
+public:
+    static filepath_t module_file_path();
+    static filepath_t module_file_dir();
+
+    filepath_t() = default;
+    filepath_t(const filepath_t&) = default;
+    filepath_t(const tstring &s) : string_t(s) {}
+    filepath_t(const tchar *s) : string_t(s) {}
+
+    /**
+     * パスのディレクトリ部分を切り出して返す。
+     * 返り値の末尾の "\\" は常に削除される。
+     */
+    filepath_t dir() const;
+
+    /** ディレクトリ d から見た相対パスに変換した結果を返す。 */
+    filepath_t relative_path_from(const filepath_t &d) const;
+
+    /** ディレクトリ d から見た相対パスと仮定して絶対パスに変換した結果を返す。 */
+    filepath_t absolute_path_with(const filepath_t &d) const;    
+};
 
 
 /** 二次元情報を扱うための構造体. */
 template <typename T>
 struct xy_t
 {
-    inline xy_t() {}
+    inline xy_t() = default;
+    inline xy_t(const xy_t<T>&) = default;
     inline xy_t(const T &_x, const T &_y) : x(_x), y(_y) {}
 
     inline bool operator ==(const xy_t<T> &n) const { return __cmp(n) == 0; }
     inline bool operator !=(const xy_t<T> &n) const { return __cmp(n) != 0; }
     inline bool operator <(const xy_t<T> &n) const { return __cmp(n) == 1; }
     inline bool operator >(const xy_t<T> &n) const { return __cmp(n) == -1; }
+
+    inline xy_t<T>& operator += (const xy_t<T> &n) { x += n.x; y += n.y; return (*this); }
+    inline xy_t<T>& operator -= (const xy_t<T> &n) { x -= n.x; y -= n.y; return (*this); }
+
+    inline xy_t<T> operator + () { return xy_t<T>(+x, +y); }
+    inline xy_t<T> operator - () { return xy_t<T>(-x, -y); }
 
     inline int __cmp(const xy_t<T> &n) const
     {
@@ -62,6 +116,16 @@ struct xy_t
 
     T x, y;
 };
+
+template <class T> xy_t<T> operator+(const xy_t<T> &n1, const xy_t<T> &n2)
+{
+    return xy_t<T>(n1.x + n2.x, n1.y + n2.y);
+}
+
+template <class T> xy_t<T> operator-(const xy_t<T> &n1, const xy_t<T> &n2)
+{
+    return xy_t<T>(n1.x - n2.x, n1.y - n2.y);
+}
 
 using position_t = xy_t<int>;
 using width_t = xy_t<int>;
@@ -211,5 +275,36 @@ inline width_t get_window_size()
     GetWindowSize(&w.x, &w.y);
     return w;
 }
+
+
+/** ドラッグ&ドロップされたファイルの絶対パスのリストを返す。 */
+inline std::list<filepath_t> get_dragged_files()
+{
+    std::list<filepath_t> out;
+    tchar path[4096];
+    size_t num = GetDragFileNum();
+
+    for (size_t i = 0; i < num; ++i)
+    {
+        GetDragFilePath(path);
+        out.push_back(filepath_t(path));
+    }
+
+    return out;
+}
+
+}
+
+
+namespace std
+{
+
+template <> struct hash<dxlib::filepath_t> : public hash<dxlib::tstring>
+{
+    size_t operator()(const dxlib::filepath_t &x) const
+    {
+        return hash<dxlib::tstring>::operator()(x);
+    }
+};
 
 }
