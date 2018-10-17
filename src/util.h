@@ -34,6 +34,16 @@ typedef std::ifstream tifstream;
 typedef std::ofstream tofstream;
 #endif
 
+class string_t;
+class filepath_t;
+struct box_t;
+
+/** 式 r1 <= x < r2 が成り立つかどうかを返す。 */
+inline bool within(int x, int r1, int r2)
+{
+    return (x >= r1) and (x < r2);
+}
+
 
 /** tstring のラッパークラス。 */
 class string_t : public tstring
@@ -44,13 +54,10 @@ public:
     string_t(const tstring &s) : tstring(s) {}
     string_t(const tchar *s) : tstring(s) {}
 
-    /**
-     * 区切り文字 sep によって文字列を分割して返す。
-     * @param MAX_NUM 分割数の最大値
-     */
+    /** 区切り文字 `sep` によって文字列を分割して返す。 */
     std::vector<string_t> split(const tchar *sep, const int MAX_NUM = -1) const;
 
-    /** 文字列内にある全ての from を to に置き換えた結果を返す。 */
+    /** 文字列内にある全ての `from` を `to` に置き換えた結果を返す。 */
     string_t replace(const tstring &from, const tstring &to) const;
 };
 
@@ -67,10 +74,7 @@ public:
     filepath_t(const tstring &s) : string_t(s) {}
     filepath_t(const tchar *s) : string_t(s) {}
 
-    /**
-     * パスのディレクトリ部分を切り出して返す。
-     * 返り値の末尾の "\\" は常に削除される。
-     */
+    /** パスのディレクトリ部分を切り出して返す。 返り値の末尾の "\\" は常に削除される。 */
     filepath_t dir() const;
 
     /** ディレクトリ d から見た相対パスに変換した結果を返す。 */
@@ -124,13 +128,9 @@ struct xy_t
         return 0;
     }
 
-    bool is_in_box(xy_t<int> position, xy_t<int> width) const
+    inline bool is_in_box(xy_t<int> p, xy_t<int> w) const
     {
-        if (x < position.x) return false;
-        if (y < position.y) return false;
-        if (x >= position.x + width.x) return false;
-        if (y >= position.y + width.y) return false;
-        return true;
+        return within(x, p.x, p.x + w.x) and within(y, p.y, p.y + w.y);
     }
 
     T x, y;
@@ -153,6 +153,34 @@ template <class T> xy_t<T> operator*(const xy_t<T> &n1, const xy_t<T> &n2)
 
 using position_t = xy_t<int>;
 using width_t = xy_t<int>;
+
+
+/** 矩形領域を表すためのクラス。 */
+struct box_t
+{
+    box_t() : position(0, 0), width(0, 0) {}
+    box_t(position_t p, width_t w) : position(p), width(w) {}
+    box_t(const box_t&) = default;
+    box_t(box_t&&) = default;
+
+    /** 矩形領域 `b` と重なり合っているかどうかを返す。 */
+    inline bool do_collide_with(const box_t &b) const
+    {
+        if (x1() >= b.x2() or x2() <= b.x1()) return false;
+        if (y1() >= b.y2() or y2() <= b.y1()) return false;
+        return true;
+    }
+
+    inline int x1() const { return position.x; }
+    inline int y1() const { return position.y; }
+    inline int x2() const { return position.x + width.x; }
+    inline int y2() const { return position.y + width.y; }
+    inline int cx() const { return position.x + width.x / 2; }
+    inline int cy() const { return position.y + width.y / 2; }
+
+    position_t position;
+    width_t width;
+};
 
 
 /** 行列を表すためのクラス。 */
@@ -231,12 +259,12 @@ struct color_t
 
     operator int() const { return GetColor(r, g, b); }
 
-    bool operator==(const color_t &c) const { return __cmp(c) == 0; }
-    bool operator!=(const color_t &c) const { return __cmp(c) != 0; }
-    bool operator<(const color_t &c) const { return __cmp(c) == 1; }
-    bool operator>(const color_t &c) const { return __cmp(c) == -1; }
+    bool operator==(const color_t &c) const { return _cmp(c) == 0; }
+    bool operator!=(const color_t &c) const { return _cmp(c) != 0; }
+    bool operator<(const color_t &c) const { return _cmp(c) == 1; }
+    bool operator>(const color_t &c) const { return _cmp(c) == -1; }
 
-    int __cmp(const color_t &c) const
+    inline int _cmp(const color_t &c) const
     {
         if (r != c.r) return (r < c.r) ? 1 : -1;
         if (g != c.g) return (g < c.g) ? 1 : -1;
@@ -256,13 +284,15 @@ public:
     rotater_t(double radius)
         : m_radius(radius), m_sin(std::sin(radius)), m_cos(std::cos(radius)) {}
 
-    position_t operator()(position_t p)
+    /** ベクトル `p` を指定した角度で回転した結果を返す。 */
+    inline position_t operator()(position_t p)
     {
         return position_t(
             (int)(((double)p.x * m_cos) - ((double)p.y * m_sin)),
             (int)(((double)p.x * m_sin) + ((double)p.y * m_cos)));
     }
-    double radius() const { return m_radius; }
+
+    inline double radius() const { return m_radius; }
 
 private:
     double m_radius;
