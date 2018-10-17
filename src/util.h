@@ -9,6 +9,7 @@
 #include <cstdarg>
 #include <algorithm>
 #include <initializer_list>
+#include <unordered_map>
 
 #include <DxLib.h>
 
@@ -19,6 +20,7 @@ namespace dxlib
 using age_t = size_t;
 using time_t = int;
 using index_t = int;
+using scale_t = double;
 
 using tchar = TCHAR;
 
@@ -79,6 +81,23 @@ public:
 };
 
 
+/** std::unordered_map のラッパークラス。 */
+template <class K, class V> class hash_map : public std::unordered_map<K, V>
+{
+public:
+    hash_map() {}
+    hash_map(const V &def) : m_default(def) {}
+    
+    const V& get(const K &key) const
+        {
+            auto it = find(key);
+            return (it != end()) ? (it->second) : m_default;
+        }
+private:
+    V m_default;
+};
+
+
 /** 二次元情報を扱うための構造体. */
 template <typename T>
 struct xy_t
@@ -127,8 +146,46 @@ template <class T> xy_t<T> operator-(const xy_t<T> &n1, const xy_t<T> &n2)
     return xy_t<T>(n1.x - n2.x, n1.y - n2.y);
 }
 
+template <class T> xy_t<T> operator*(const xy_t<T> &n1, const xy_t<T> &n2)
+{
+    return xy_t<T>(n1.x * n2.x, n1.y * n2.y);
+}
+
 using position_t = xy_t<int>;
 using width_t = xy_t<int>;
+
+
+/** 行列を表すためのクラス。 */
+template <typename T> class matrix_t : public std::vector<T>
+{
+public:
+    matrix_t() = default;
+    matrix_t(const matrix_t&) = default;
+    matrix_t(matrix_t&&) = default;
+
+    matrix_t(size_t x, size_t y)
+        : std::vector<T>(x * y) m_size(x, y) {}
+    
+    matrix_t(const std::initializer_list<std::initializer_list<T>> &lists)
+        : m_size(0, lists.size())
+        {
+            for (const auto &l : lists)
+            {
+                insert(end(), l.begin(), l.end());
+                m_size.x = l.size();
+            }
+            assert(std::vector<T>::size() == m_size.x * m_size.y);
+        }
+    
+    inline const T& at(size_t x, size_t y) const { return std::vector<T>::at(idx(x, y)); }
+    inline       T& at(size_t x, size_t y)       { return std::vector<T>::at(idx(x, y)); }
+    inline const xy_t<size_t>& size() const { return m_size; }
+
+private:
+    inline size_t idx(size_t x, size_t y) const { return size().x * y + x; }
+
+    xy_t<size_t> m_size;
+};
 
 
 /** 値域を持つ変数を表すためのクラス。 */
@@ -213,6 +270,29 @@ private:
 };
 
 
+/** 状態を管理するクラス。 */
+class state_t
+{
+public:
+    state_t(int def = 0) : m_st(def), m_age(0) {}
+
+    void update() { ++m_age; }
+    
+    void set(int s) { if (s != m_st) { m_st = s; m_age = 0; } }
+    void reset(int s) { m_st = s; m_age = 0; }
+
+    int get() const { return m_st; }
+    size_t age() const { return m_age; }
+
+private:
+    int m_st;
+    size_t m_age;
+};
+
+
+/* Functions */
+
+
 inline int stoi(const tstring& str)
 {
     int i(-1);
@@ -242,6 +322,7 @@ inline tstring format(const tchar* fmt, ...)
 }
 
 
+/** 文字列をマルチバイト文字列に変換して返す。 */
 inline std::string string(const tstring &str)
 {
 #ifdef UNICODE
@@ -255,6 +336,7 @@ inline std::string string(const tstring &str)
 }
 
 
+/** 文字列をユニコード文字列にして返す。 */
 inline std::wstring wstring(const tstring &str)
 {
 #ifdef UNICODE
