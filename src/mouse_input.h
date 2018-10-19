@@ -64,9 +64,11 @@ public:
     inline const xy_t<int>& position() const { return m_position; }
     inline const xy_t<int>& delta() const { return m_delta; }
 
-    const button_t& left() const { return m_left; }
-    const button_t& right() const { return m_right; }
-    const button_t& middle() const { return m_middle; }
+    inline const button_t& left() const { return m_left; }
+    inline const button_t& right() const { return m_right; }
+    inline const button_t& middle() const { return m_middle; }
+
+    inline int wheel() const { return m_wheel; }
 
 private:
     mouse_input_t();

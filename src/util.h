@@ -154,6 +154,8 @@ template <class T> xy_t<T> operator*(const xy_t<T> &n1, const xy_t<T> &n2)
 using position_t = xy_t<int>;
 using width_t = xy_t<int>;
 
+extern const position_t NPOS; // 不正な座標値
+
 
 /** 矩形領域を表すためのクラス。 */
 struct box_t

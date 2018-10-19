@@ -1,4 +1,5 @@
 #include <cstring>
+#include <limits>
 #include <Windows.h>
 
 #include "util.h"
@@ -108,6 +109,9 @@ filepath_t filepath_t::absolute_path_with(const filepath_t &p) const
     else
         return (*this);
 }
+
+
+const position_t NPOS = position_t(INT_MIN, INT_MIN);
 
 
 }
