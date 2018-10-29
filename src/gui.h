@@ -52,7 +52,7 @@ public:
     void update_recursively();
 
     /** 位置 `p` を左上として自分自身および全ての子オブジェクトを描画する。 */
-    void draw_recursively(const position_t &p) const;
+    void draw_recursively(const position_t &p = NPOS) const;
 
     inline const position_t& position() const { return m_position; }
     inline const width_t& width() const { return m_width; }

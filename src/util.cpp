@@ -8,6 +8,16 @@
 namespace dxlib
 {
 
+string_t string_t::slice(int i, int j) const
+{
+    while (i < 0) i += size();
+    while (j <= 0) j += size();
+    assert(i < j);
+
+    return substr(i, j - i);
+}
+
+
 std::vector<string_t> string_t::split(const tchar *sep, const int MAX_NUM) const
 {
     auto _find_split_index = [this](const tchar *sep, int begin) -> index_t
@@ -65,6 +75,30 @@ string_t string_t::replace(const tstring &from, const tstring &to) const
 }
 
 
+bool string_t::startswith(const tstring &s) const
+{
+    if (size() < s.size()) return false;
+
+    for (size_t i = 0; i < s.size(); ++i)
+        if (at(i) != s.at(i))
+            return false;
+
+    return true;
+}
+
+
+bool string_t::endswith(const tstring &s) const
+{
+    if (size() < s.size()) return false;
+
+    for (size_t i = 1; i <= s.size(); ++i)
+        if (at(size() - i) != s.at(s.size() - i))
+            return false;
+
+    return true;
+}
+
+
 filepath_t filepath_t::module_file_path()
 {
     tchar path[4096];
@@ -89,10 +123,14 @@ filepath_t filepath_t::module_file_dir()
 filepath_t filepath_t::dir() const
 {
     auto i = rfind(_T('\\'));
-    if (i != tstring::npos)
-        return substr(0, i);
-    else
-        return _T(".");
+    return (i != tstring::npos) ? substr(0, i) : _T(".");
+}
+
+
+filepath_t filepath_t::extension() const
+{
+    auto i = rfind(_T('.'));
+    return (i != tstring::npos) ? substr(i + 1) : _T("");
 }
 
 

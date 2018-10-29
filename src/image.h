@@ -22,6 +22,7 @@ public:
 
     inline width_t width() const;
 
+    inline void draw(position_t p) const;
     inline void draw_rotated(
         position_t p, double scale, double radius,
         bool reverse_x = false, bool reverse_y = false) const;
@@ -67,6 +68,11 @@ inline width_t image_t::width() const
     width_t w;
     GetGraphSize(m_handle, &w.x, &w.y);
     return w;
+}
+
+inline void image_t::draw(position_t p) const
+{
+    DrawGraph(p.x, p.y, m_handle, TRUE);
 }
 
 inline void image_t::draw_rotated(

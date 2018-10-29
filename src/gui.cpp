@@ -105,12 +105,14 @@ void gui_t::update_recursively()
 
 void gui_t::draw_recursively(const position_t &p) const
 {
+    const position_t &_p = (p == NPOS) ? position() : p;
+
     if (m_image)
-        m_image->draw(p.x, p.y); // 生成済みの描画結果を使用
+        m_image->draw(_p); // 生成済みの描画結果を使用
     else
-        draw(p); // オンラインで描画
+        draw(_p); // オンラインで描画
     
-    xy_t<int> d = p - position();
+    xy_t<int> d = _p - position();
     for (const auto &child : m_children)
         child->draw_recursively(child->position() + d);
 }
@@ -140,12 +142,6 @@ void gui_t::remove_child(gui_ptr_t p)
         m_children.erase(it);
         m_image.reset();
     }
-}
-
-
-bool gui_t::is_pointed() const
-{
-    return mouse_input().position().is_in_box(m_position, m_width);
 }
 
 

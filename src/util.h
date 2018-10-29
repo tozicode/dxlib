@@ -44,6 +44,13 @@ inline bool within(int x, int r1, int r2)
     return (x >= r1) and (x < r2);
 }
 
+/** 変数 `x` の値を min <= x <= max の範囲に正規化する。 */
+template <typename T> void normalize(T *x, const T &min, const T &max)
+{
+    if (*x < min) *x = min;
+    if (*x > max) *x = max;
+}
+
 
 /** tstring のラッパークラス。 */
 class string_t : public tstring
@@ -54,11 +61,19 @@ public:
     string_t(const tstring &s) : tstring(s) {}
     string_t(const tchar *s) : tstring(s) {}
 
+    /** 指定した範囲の部分文字列を返す。Pythonのスライスとほぼ同じ仕様。 */
+    string_t slice(int i, int j = 0) const;
+
     /** 区切り文字 `sep` によって文字列を分割して返す。 */
     std::vector<string_t> split(const tchar *sep, const int MAX_NUM = -1) const;
 
     /** 文字列内にある全ての `from` を `to` に置き換えた結果を返す。 */
     string_t replace(const tstring &from, const tstring &to) const;
+
+    bool startswith(const tstring &s) const;
+
+    /** 文字列の末尾が `s` なら true を返す。 */
+    bool endswith(const tstring &s) const;
 };
 
 
@@ -77,6 +92,9 @@ public:
     /** パスのディレクトリ部分を切り出して返す。 返り値の末尾の "\\" は常に削除される。 */
     filepath_t dir() const;
 
+    /** パスの拡張子部分を切り出して返す。 */
+    filepath_t extension() const;
+
     /** ディレクトリ d から見た相対パスに変換した結果を返す。 */
     filepath_t relative_path_from(const filepath_t &d) const;
 
@@ -94,8 +112,8 @@ public:
     
     const V& get(const K &key) const
         {
-            auto it = find(key);
-            return (it != end()) ? (it->second) : m_default;
+            auto it = this->find(key);
+            return (it != this->end()) ? (it->second) : m_default;
         }
 private:
     V m_default;
@@ -118,8 +136,8 @@ struct xy_t
     inline xy_t<T>& operator += (const xy_t<T> &n) { x += n.x; y += n.y; return (*this); }
     inline xy_t<T>& operator -= (const xy_t<T> &n) { x -= n.x; y -= n.y; return (*this); }
 
-    inline xy_t<T> operator + () { return xy_t<T>(+x, +y); }
-    inline xy_t<T> operator - () { return xy_t<T>(-x, -y); }
+    inline xy_t<T> operator + () const { return xy_t<T>(+x, +y); }
+    inline xy_t<T> operator - () const { return xy_t<T>(-x, -y); }
 
     inline int __cmp(const xy_t<T> &n) const
     {
@@ -194,14 +212,14 @@ public:
     matrix_t(matrix_t&&) = default;
 
     matrix_t(size_t x, size_t y)
-        : std::vector<T>(x * y) m_size(x, y) {}
+        : std::vector<T>(x * y), m_size(x, y) {}
     
     matrix_t(const std::initializer_list<std::initializer_list<T>> &lists)
         : m_size(0, lists.size())
         {
             for (const auto &l : lists)
             {
-                insert(end(), l.begin(), l.end());
+                insert(this->end(), l.begin(), l.end());
                 m_size.x = l.size();
             }
             assert(std::vector<T>::size() == m_size.x * m_size.y);
